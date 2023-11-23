@@ -5,7 +5,6 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import (
     expected_conditions as EC,
 )
-import time
 import re
 import os
 import csv
@@ -79,7 +78,7 @@ def get_articles_and_cross_lists(driver):
 if __name__ == "__main__":
     # Variables
     url = "https://arxiv.org/"
-    field = "Physics"
+    field = "Mathematics"
 
     # Set up driver
     chrome_options = Options()
