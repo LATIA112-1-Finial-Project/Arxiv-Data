@@ -1,52 +1,65 @@
-import csv
-from lib2to3.pgen2.driver import Driver
+import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import pandas as pd
+import os
 
-# 等待元素可見
-def wait_until(self, css_selector, timeout=10):
-        """Wait for and return the element(s) selected by css_selector."""
-        wait = WebDriverWait(self, timeout=timeout)
-        is_visible = EC.visibility_of_element_located((By.CSS_SELECTOR, css_selector))
-        return wait.until(is_visible)
-driver = webdriver.Chrome()
+def scrape_arxiv_with_selenium(category, year):
+    # Create Chrome WebDriver
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--window-size=1200x600')
 
-# 定義要爬取的網址列表
-urls = ["https://arxiv.org/archive/math", "https://arxiv.org/archive/cs"]
+    # Specify the path to your ChromeDriver executable
+    driver_path = "C:/path/to/chromedriver.exe"
+    options.add_argument(f"executable_path={driver_path}")
 
-# 指定 CSV 文件的路徑
-file_path = r'C:\Users\user\Desktop\for github\Arxiv-Data\Bo\arxiv_reports.csv'
+    # Use a different name for the WebDriver instance to avoid conflict
+    wd = webdriver.Chrome(options=options)
 
-# 開啟 CSV 文件，指定列名稱
-with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
-    fieldnames = ['Year', 'Article', 'Cross-lists', 'Total']
-    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+    # Visit the arXiv webpage
+    base_url = f"https://arxiv.org/list/{category}/{year}"
+    wd.get(base_url)
 
-    # 寫入列名稱
-    writer.writeheader()
+    try:
+        table = WebDriverWait(wd, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'list-table'))
+        )
+    except Exception as e:
+        print("Error waiting for the table element:", e)
+        wd.quit()
+        return
 
-    for url in urls:
-        # 打開目標網站
-        driver.get(url)
+    time.sleep(5)
 
-        # 找到包含年份的元素
-        year_elements = driver.find_elements(By.CSS_SELECTOR, '.is-size-7.has-text-weight-bold')
+    rows = table.find_elements(By.TAG_NAME, 'tr')[1:]
 
-        article_elements = driver.find_elements(By.CSS_SELECTOR, 'b')
-        cross_lists_elements = driver.find_elements(By.CSS_SELECTOR, 'i')
+    data = []
+    headers = ['Title', 'Authors', 'Link']
 
-        # 提取並寫入CSV文件
-        for year_element, article_element, cross_lists_element in zip(year_elements, article_elements, cross_lists_elements):
-            year_text = year_element.text.strip()
-            article_text = article_element.text.strip()
-            cross_lists_text = cross_lists_element.text.strip()
+    for row in rows:
+        columns = row.find_elements(By.TAG_NAME, 'td')
+        title = columns[0].text
+        authors = columns[1].text
+        link = columns[0].find_element(By.TAG_NAME, 'a').get_attribute('href')
+        data.append([title, authors, link])
 
-            # 計算總數
-            total_text = str(int(article_text) + int(cross_lists_text))
+    # Close the WebDriver
+    wd.quit()
 
-            writer.writerow({'Year': year_text, 'Article': article_text, 'Cross-lists': cross_lists_text, 'Total': total_text})
+    # Save as a CSV file
+    df = pd.DataFrame(data, columns=headers)
+    file_path = os.path.join(os.path.expanduser('~'), 'Desktop', f"{category}_{year}_arxiv.csv")
+    df.to_csv(file_path, index=False)
+    print(f"{category}_{year}_arxiv.csv has been saved to {file_path}.")
 
-# 關閉瀏覽器視窗
-driver.quit()
+if __name__ == "__main__":
+    categories = ['math', 'cs']
+    years = ['21', '20']
+
+    for category in categories:
+        for year in years:
+            scrape_arxiv_with_selenium(category, year)
