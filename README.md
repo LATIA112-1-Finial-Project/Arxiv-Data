@@ -32,7 +32,8 @@ This series of Python scripts aims to scrape the [arxiv.org](https://arxiv.org/)
    1. `BO/`: In this folder, run the command below to get the data from Computer Science and Mathematics field.
 
       ```bash
-      $ python3 computer\ science.py mathematics.py
+      $ python3 computer\ science.py
+      $ python3 mathematics.py
       ```
 
    2. `LUNG/`: In this folder, run the command below to get the data from Quantitative Biology, Quantitative Finance, Statistics, Electrical Engineering and Systems Science, and Economics field.
