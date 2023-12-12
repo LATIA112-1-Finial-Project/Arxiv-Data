@@ -14,8 +14,12 @@ import re
 import csv
 import os
 
+
 def wait_for_element_visibility(driver, locator, timeout=10):
-    return WebDriverWait(driver, timeout).until(EC.visibility_of_element_located(locator))
+    return WebDriverWait(driver, timeout).until(
+        EC.visibility_of_element_located(locator)
+    )
+
 
 def get_categorys_and_links(driver, field):
     categorys = []
@@ -31,6 +35,7 @@ def get_categorys_and_links(driver, field):
         category_links.append(category_element.get_attribute("href"))
 
     return categorys, category_links
+
 
 def get_years_and_links(driver):
     years = []
@@ -51,6 +56,7 @@ def get_years_and_links(driver):
 
     return years, year_links
 
+
 def get_articles_and_cross_lists(driver):
     totals_element = wait_for_element(
         driver, (By.XPATH, '//p[contains(text(), "totals:")]')
@@ -65,6 +71,7 @@ def get_articles_and_cross_lists(driver):
     cross_lists_count = int(cross_lists_match.group(1)) if cross_lists_match else 0
 
     return articles_count, cross_lists_count
+
 
 def crawl_category_data(url, field, chrome_options, final_table_writer):
     # 初始化檔案名稱
@@ -113,9 +120,16 @@ def crawl_category_data(url, field, chrome_options, final_table_writer):
     # 關閉 WebDriver
     driver.quit()
 
+
 if __name__ == "__main__":
     url = "https://arxiv.org/"
-    fields = ["Physics","Economics", "Electrical Engineering and Systems Science", "Statistics", "Quantitative Finance", "Quantitative Biology"]
+    fields = [
+        "Economics",
+        "Electrical Engineering and Systems Science",
+        "Statistics",
+        "Quantitative Finance",
+        "Quantitative Biology",
+    ]
 
     # 設定 WebDriver，使用 Chrome 瀏覽器在背景執行
     chrome_options = Options()
@@ -124,7 +138,9 @@ if __name__ == "__main__":
     # 初始化 final table 的 CSV 寫入器
     with open("final_data.csv", "w", newline="") as final_csvfile:
         final_table_writer = csv.writer(final_csvfile)
-        final_table_writer.writerow(["Field", "Year", "Articles", "Cross-lists", "Total"])
+        final_table_writer.writerow(
+            ["Field", "Year", "Articles", "Cross-lists", "Total"]
+        )
 
         for field in fields:
             crawl_category_data(url, field, chrome_options, final_table_writer)

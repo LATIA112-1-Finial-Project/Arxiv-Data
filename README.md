@@ -27,22 +27,10 @@ This series of Python scripts aims to scrape the [arxiv.org](https://arxiv.org/)
    $ pip install -r requirements.txt
    ```
 
-3. Navigate to the corresponding folder and run the following command to execute the script, their are three folders in this repository:
+3. Run the following command to execute the script.
 
-   1. `BO/`: In this folder, run the command below to get the data from Computer Science and Mathematics field.
+   ```bash
+   $ python3 scripts/arxiv_crawler.py
+   ```
 
-      ```bash
-      $ python3 computer\ science.py
-      $ python3 mathematics.py
-      ```
-
-   2. `LUNG/`: In this folder, run the command below to get the data from Quantitative Biology, Quantitative Finance, Statistics, Electrical Engineering and Systems Science, and Economics field.
-
-      ```bash
-      $ python3 TRY.py
-      ```
-
-   3. `Ryan/`: In this folder, run the command below to get the data from Physics field.
-      ```bash
-      $ python3 arxiv_crawler.py
-      ```
+The resulting CSV files are stored in folder named `outputs/`, and each file is named by their field and category `ex. Physics_Astrophysics.csv`.

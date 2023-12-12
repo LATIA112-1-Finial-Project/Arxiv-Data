@@ -135,47 +135,61 @@ if __name__ == "__main__":
 
     # 要爬取的網址和領域名稱
     url = "https://arxiv.org/"
-    field = "Physics"
+    fields = [
+        "Physics",
+        "Economics",
+        "Electrical Engineering and Systems Science",
+        "Statistics",
+        "Quantitative Finance",
+        "Quantitative Biology",
+    ]
 
     # 設定 WebDriver，使用Chrome瀏覽器在背景執行
     chrome_options = Options()
     chrome_options.add_argument("--headless")  # 不開啟實體瀏覽器
     driver = webdriver.Chrome(options=chrome_options)
-    driver.get(url)  # 開啟網頁
 
     # 獲取子領域的名稱和相應的超連結
-    categorys, category_links = get_categorys_and_links(driver, field)
+    for field in fields:
+        driver.get(url)  # 開啟網頁
+        categorys, category_links = get_categorys_and_links(driver, field)
 
-    for category, category_link in zip(categorys, category_links):
-        # 依序爬取每個子領域
-        print(f"Crawling Category {category}...")
+        for category, category_link in zip(categorys, category_links):
+            # 依序爬取每個子領域
+            print(f"Crawling Category {category}...")
 
-        # 建構檔案名稱
-        file_name = field + "_" + category.replace(" ", "_").replace("-", "_") + ".csv"
-        file_name = re.sub(r"_+", "_", file_name)
+            # 建構檔案名稱
+            file_name = (
+                field.replace(" ", "_")
+                + "_"
+                + category.replace(" ", "_").replace("-", "_")
+                + ".csv"
+            )
+            file_name = re.sub(r"_+", "_", file_name)
+            file_name = os.path.join("outputs", file_name)
 
-        # 訪問子領域的超連結
-        driver.get(category_link)
-        wait_for_element(driver, (By.ID, "content"))
+            # 訪問子領域的超連結
+            driver.get(category_link)
+            wait_for_element(driver, (By.ID, "content"))
 
-        # 獲取所有年份和相應的超連結
-        years, year_links = get_years_and_links(driver)
-        with open(file_name, "w", newline="") as csvfile:
-            csv_writer = csv.writer(csvfile)
-            csv_writer.writerow(["Year", "Articles", "Cross-lists", "Total"])
+            # 獲取所有年份和相應的超連結
+            years, year_links = get_years_and_links(driver)
+            with open(file_name, "w+", newline="") as csvfile:
+                csv_writer = csv.writer(csvfile)
+                csv_writer.writerow(["Year", "Articles", "Cross-lists", "Total"])
 
-            for year, year_link in zip(years, year_links):
-                # 依序爬取每個年份
-                driver.get(year_link)
-                wait_for_element(driver, (By.ID, "content"))
+                for year, year_link in zip(years, year_links):
+                    # 依序爬取每個年份
+                    driver.get(year_link)
+                    wait_for_element(driver, (By.ID, "content"))
 
-                # 獲取文章和交叉列表的數量, 並計算總數
-                articles, cross_lists = get_articles_and_cross_lists(driver)
-                total = articles + cross_lists
+                    # 獲取文章和交叉列表的數量, 並計算總數
+                    articles, cross_lists = get_articles_and_cross_lists(driver)
+                    total = articles + cross_lists
 
-                # 寫入 csv 檔案
-                csv_writer.writerow([year, articles, cross_lists, total])
+                    # 寫入 csv 檔案
+                    csv_writer.writerow([year, articles, cross_lists, total])
 
-        print(f"Succeed! {file_name} has been created.\n")
+            print(f"Succeed! {file_name} has been created.\n")
 
     driver.quit()  # 關閉瀏覽器
